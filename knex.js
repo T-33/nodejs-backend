@@ -7,7 +7,7 @@ export async function getKnex() {
         return knex;
     }
 
-    const PG_URI = 'postgres://postgres:TIMUR703_@localhost/postgres';
+    const PG_URI = 'postgres://postgres:TIMUR703_@localhost/suslike';
     knex = Knex(PG_URI);
 
     return knex;

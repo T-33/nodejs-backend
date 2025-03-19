@@ -20,6 +20,7 @@ module.exports = {
         'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: true }],
         'guard-for-in': 'off',
         'class-methods-use-this': ['off'],
+        'linebreak-style': ['error', (process.platform === 'win32' ? 'windows' : 'unix')],
         'no-constant-condition': ['off'],
         indent: ['error', 4],
     },
