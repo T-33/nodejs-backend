@@ -20,7 +20,7 @@ authRouter.post('/register', async (ctx) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    const result = await knex('users')
+    await knex('users')
         .insert({
             username,
             password: passwordHash,
@@ -70,6 +70,8 @@ authRouter.post('/login', async (ctx) => {
         token,
     });
 
+    ctx.cookies.set('token', token, { httpOnly: true });
+
     ctx.status = 200;
     ctx.body = {
         message: 'Login successful',
@@ -79,5 +81,21 @@ authRouter.post('/login', async (ctx) => {
 });
 
 authRouter.post('/logout', async (ctx) => {
-    ctx.request.body = 'logout';
+    const knex = await getKnex();
+    const token = ctx.cookies.get('token');
+
+    if (!token) {
+        throw new Error('Not authorized');
+    }
+
+    console.log({ token });
+
+    ctx.state.user = null;
+
+    await knex('tokens')
+        .where({ token })
+        .delete();
+
+    ctx.cookies.set('token', null);
+    ctx.state.user = null;
 });
