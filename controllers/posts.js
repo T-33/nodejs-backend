@@ -1,9 +1,9 @@
 import Router from 'koa-router';
 import { getKnex } from '../knex.js';
 
-export const postRouter = new Router();
+export const postsRouter = new Router();
 
-postRouter.get('/posts', async (ctx) => {
+postsRouter.get('/posts', async (ctx) => {
     const knex = await getKnex();
     const res = await knex('posts').select();
 
@@ -14,7 +14,7 @@ postRouter.get('/posts', async (ctx) => {
     ctx.status = 201;
 });
 
-postRouter.post('/post', async (ctx) => {
+postsRouter.post('/post', async (ctx) => {
     const knex = await getKnex();
 
     const res = await knex('posts').insert(ctx.request.body).returning('*');
