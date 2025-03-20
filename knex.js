@@ -1,4 +1,5 @@
 import Knex from 'knex';
+import { PG_URI } from './utils/config.js';
 
 let knex;
 
@@ -7,7 +8,6 @@ export async function getKnex() {
         return knex;
     }
 
-    const PG_URI = 'postgres://postgres:TIMUR703_@localhost/suslike';
     knex = Knex(PG_URI);
 
     return knex;
