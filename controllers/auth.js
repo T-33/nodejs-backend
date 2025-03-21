@@ -2,12 +2,16 @@ import * as crypto from 'node:crypto';
 import Router from 'koa-router';
 import Joi from 'joi';
 import bcrypt from 'bcrypt';
-import { getKnex } from '../knex.js';
+import {
+    createToken,
+    deleteToken,
+    createUser,
+    getUserByEmail,
+} from '../services/index.js';
 
 export const authRouter = new Router();
 
 authRouter.post('/register', async (ctx) => {
-    const knex = await getKnex();
     console.log('post request to /user', ctx.request.body);
 
     const joiSchema = Joi.object({
@@ -20,13 +24,11 @@ authRouter.post('/register', async (ctx) => {
 
     const passwordHash = await bcrypt.hash(password, 12);
 
-    await knex('users')
-        .insert({
-            username,
-            password: passwordHash,
-            email,
-        })
-        .returning('*');
+    await createUser({
+        username,
+        password: passwordHash,
+        email,
+    });
 
     ctx.body = {
         success: true,
@@ -36,7 +38,6 @@ authRouter.post('/register', async (ctx) => {
 });
 
 authRouter.post('/login', async (ctx) => {
-    const knex = await getKnex();
     console.log('post request to /login');
 
     const joiSchema = Joi.object({
@@ -45,11 +46,9 @@ authRouter.post('/login', async (ctx) => {
         password: Joi.string().required(),
     });
 
-    const { username, email, password } = await joiSchema.validateAsync(ctx.request.body);
+    const { email, password } = await joiSchema.validateAsync(ctx.request.body);
 
-    const dbUser = await knex('users')
-        .where({ email })
-        .first();
+    const dbUser = await getUserByEmail(email);
 
     if (!dbUser) {
         ctx.status = 401;
@@ -65,9 +64,9 @@ authRouter.post('/login', async (ctx) => {
 
     const token = crypto.randomBytes(20).toString('hex');
 
-    await knex('tokens').insert({
-        user_id: dbUser.id,
+    await createToken({
         token,
+        user_id: dbUser.id,
     });
 
     ctx.cookies.set('token', token, { httpOnly: true });
@@ -81,7 +80,6 @@ authRouter.post('/login', async (ctx) => {
 });
 
 authRouter.post('/logout', async (ctx) => {
-    const knex = await getKnex();
     const token = ctx.cookies.get('token');
 
     if (!token) {
@@ -92,9 +90,7 @@ authRouter.post('/logout', async (ctx) => {
 
     ctx.state.user = null;
 
-    await knex('tokens')
-        .where({ token })
-        .delete();
+    await deleteToken(token);
 
     ctx.cookies.set('token', null);
     ctx.state.user = null;
