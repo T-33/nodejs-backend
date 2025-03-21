@@ -27,23 +27,13 @@ usersRouter.get('/users/:id', async (ctx) => {
     ctx.status = 200;
 });
 
-usersRouter.delete('/users', async (ctx) => {
+usersRouter.delete('/users/:id', async (ctx) => {
     if (!ctx.state.user) {
         throw new Error('Unauthorized');
     }
 
-    const joiSchema = Joi.object({
-        username: Joi.string(),
-        email: Joi.string().email().required(),
-        password: Joi.string(),
-    });
-
-    const { email } = await joiSchema.validateAsync(ctx.request.body);
-
-    const dbUser = await getUserByEmail(email);
-
     //tokens associated with user are also deleted, making current cookie useless;
-    await deleteUserById(dbUser.id);
+    await deleteUserById(ctx.params.id);
 
     ctx.status = 200;
     ctx.body = { };

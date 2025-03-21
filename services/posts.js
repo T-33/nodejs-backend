@@ -2,9 +2,11 @@ import { getKnex } from '../knex.js';
 
 export async function createPost(post) {
     const knex = await getKnex();
-    await knex('posts')
+    const newPost = await knex('posts')
         .insert(post)
         .returning('*');
+
+    return newPost;
 }
 
 export async function getAllPosts() {

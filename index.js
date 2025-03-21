@@ -25,6 +25,7 @@ async function main() {
     });
 
     app.use(authRouter.routes());
+    app.use(authRouter.allowedMethods());
 
     app.use(async (ctx, next) => {
         const { headers } = ctx.request;
@@ -75,7 +76,9 @@ async function main() {
     });
 
     app.use(usersRouter.routes());
+    app.use(usersRouter.allowedMethods());
     app.use(postsRouter.routes());
+    app.use(postsRouter.allowedMethods());
 
     console.log(res.rows);
 

@@ -1,27 +1,61 @@
 import Router from 'koa-router';
-import { getKnex } from '../knex.js';
+import Joi from 'joi';
+import {
+    getAllPosts,
+    getUserPosts,
+    createPost,
+    deletePostById,
+} from '../services/index.js';
 
 export const postsRouter = new Router();
 
 postsRouter.get('/posts', async (ctx) => {
-    const knex = await getKnex();
-    const res = await knex('posts').select();
+    const posts = await getAllPosts();
 
     ctx.body = {
         success: true,
-        posts: res,
+        posts,
+    };
+    ctx.status = 200;
+});
+
+postsRouter.get('/users/:id/posts', async (ctx) => {
+    const posts = await getUserPosts(ctx.params.id);
+
+    ctx.body = {
+        success: true,
+        posts,
+    };
+    ctx.status = 200;
+});
+
+postsRouter.post('/posts', async (ctx) => {
+    if (!ctx.state.user) {
+        throw new Error('Unauthorized');
+    }
+
+    const joiSchema = Joi.object({
+        email: Joi.string().email().required(),
+        content: Joi.string().required(),
+    });
+
+    const { content } = await joiSchema.validateAsync(ctx.request.body);
+
+    const newPost = await createPost({ user_id: ctx.state.user.id, content });
+
+    ctx.body = {
+        post: newPost,
     };
     ctx.status = 201;
 });
 
-postsRouter.post('/post', async (ctx) => {
-    const knex = await getKnex();
+postsRouter.delete('/posts/:id', async (ctx) => {
+    if (!ctx.state.user) {
+        throw new Error('Unauthorized');
+    }
 
-    const res = await knex('posts').insert(ctx.request.body).returning('*');
+    await deletePostById(ctx.params.id);
 
-    ctx.body = {
-        success: true,
-        res,
-    };
-    ctx.status = 201;
+    ctx.status = 200;
+    ctx.body = { };
 });
