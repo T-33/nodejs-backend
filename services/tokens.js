@@ -15,3 +15,11 @@ export async function deleteToken(token) {
         .where({ token })
         .delete();
 }
+
+export async function deleteUserTokens(userId) {
+    const knex = await getKnex();
+
+    await knex('tokens')
+        .where({ user_id: userId })
+        .delete();
+}

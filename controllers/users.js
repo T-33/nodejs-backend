@@ -1,6 +1,11 @@
 import Router from 'koa-router';
 import Joi from 'joi';
-import { getAllUsers, getUserById } from '../services/index.js';
+import {
+    getAllUsers,
+    getUserById,
+    getUserByEmail,
+    deleteUserById,
+} from '../services/index.js';
 
 export const usersRouter = new Router();
 
@@ -22,7 +27,24 @@ usersRouter.get('/users/:id', async (ctx) => {
     ctx.status = 200;
 });
 
-usersRouter.get('/', async (ctx) => {
+usersRouter.delete('/users', async (ctx) => {
+    if (!ctx.state.user) {
+        throw new Error('Unauthorized');
+    }
+
+    const joiSchema = Joi.object({
+        username: Joi.string(),
+        email: Joi.string().email().required(),
+        password: Joi.string(),
+    });
+
+    const { email } = await joiSchema.validateAsync(ctx.request.body);
+
+    const dbUser = await getUserByEmail(email);
+
+    //tokens associated with user are also deleted, making current cookie useless;
+    await deleteUserById(dbUser.id);
+
     ctx.status = 200;
     ctx.body = { };
 });

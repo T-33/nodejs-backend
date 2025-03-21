@@ -1,4 +1,5 @@
 import { getKnex } from '../knex.js';
+import { deleteUserTokens } from './tokens.js';
 
 export async function createUser(user) {
     const knex = await getKnex();
@@ -32,4 +33,14 @@ export async function getUserByEmail(email) {
         .first();
 
     return user;
+}
+
+export async function deleteUserById(id) {
+    const knex = await getKnex();
+
+    await deleteUserTokens(id);
+
+    await knex('users')
+        .where({ id })
+        .delete();
 }
