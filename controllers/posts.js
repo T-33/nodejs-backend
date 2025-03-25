@@ -30,10 +30,6 @@ postsRouter.get('/users/:id/posts', async (ctx) => {
 });
 
 postsRouter.post('/posts', async (ctx) => {
-    if (!ctx.state.user) {
-        throw new Error('Unauthorized');
-    }
-
     const joiSchema = Joi.object({
         email: Joi.string().email().required(),
         content: Joi.string().required(),
@@ -50,10 +46,6 @@ postsRouter.post('/posts', async (ctx) => {
 });
 
 postsRouter.delete('/posts/:id', async (ctx) => {
-    if (!ctx.state.user) {
-        throw new Error('Unauthorized');
-    }
-
     await deletePostById(ctx.params.id);
 
     ctx.status = 200;

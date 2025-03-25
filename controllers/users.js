@@ -1,9 +1,7 @@
 import Router from 'koa-router';
-import Joi from 'joi';
 import {
     getAllUsers,
     getUserById,
-    getUserByEmail,
     deleteUserById,
 } from '../services/index.js';
 
